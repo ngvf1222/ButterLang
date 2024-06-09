@@ -21,50 +21,55 @@ def is_vaild_var_name(name: str, is_stop_when_error):
     return True
 
 
-def main(program: str):
-    variables: dict[str] = {}
-    consts: list[str] = {}
-    is_stop_when_error = True
-    numebr_print_mode = False
+def main(program: str,variables={},consts={},is_stop_when_error=True,numebr_print_mode = False):
     level = 0
     is_finding_else = False
+    i=-1
     codes = program.split("\n")
     codes = map(
         lambda x: (x[: x.find("큭큭")] if "큭큭" in x else x), codes
     )  # 주석 제거
     codes: list[str] = filter(lambda x: x != "", codes)  # 빈행 제거
-    # print(list(codes))
-    for i in codes:
-        # print(i)
-        i = i.strip()
+    codes=list(codes)
+    while(i<len(codes)-1):
+        i+=1
+        code=codes[i]
+        code = code.strip()
+        #print(code)
         if is_finding_else:
-            if i.endswith("도록"):
+            if code.endswith("도록"):
                 level += 1
-            if i == "이게 진짜!":
+            if code == "이게 진짜!":
                 level -= 1
                 if level == 0:
                     is_finding_else = False
             continue
-        if i.endswith("도록"):
-            if_numebr = toNumber(i[:-2], variables)
+        if code.endswith("도록"):
+            if_numebr = toNumber(code[:-2], variables)
             if if_numebr == 0:
                 pass
             else:
                 is_finding_else = True
                 level += 1
-        if i == "이게 진짜!":
+        if code == "이게 진짜!":
             pass
-        if i.startswith("마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? ") and i[-1] == "?":
-            var_name = i[28:-1]
+        if code.endswith('시킬 것이다!'):
+            adress=toNumber(code[:-7],variables)
+            i=adress-1
+            continue
+        if code.startswith("마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? ") and code[-1] == "?":
+            var_name = code[28:-1]
             if var_name not in variables:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
             if var_name in consts:
                 error_handeler("can't edit constant", is_stop_when_error)
                 continue
-            variables[var_name] = ord(input()[0])
-        if i.endswith(" 푼수 요정이에용"):
-            var_name = i[:-9]
+            for j in sys.stdin:
+                variables[var_name] = ord(j[0])
+                break
+        if code.endswith(" 푼수 요정이에용"):
+            var_name = code[:-9]
             if (
                 is_vaild_var_name(var_name, is_stop_when_error)
                 and var_name not in variables
@@ -72,8 +77,8 @@ def main(program: str):
                 variables[var_name] = 0
             else:
                 error_handeler("non_vaild_var_name", is_stop_when_error)
-        if i.endswith(" 못 참으면 뭐?"):
-            var_name = i[:-9]
+        if code.endswith(" 못 참으면 뭐?"):
+            var_name = code[:-9]
             if var_name not in variables:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
@@ -85,8 +90,8 @@ def main(program: str):
                 variables[var_name] = int(inp)
             else:
                 error_handeler("not_intger", is_stop_when_error)
-        if i.endswith(" 버터 바보야...?"):
-            var_name = i[:-11]
+        if code.endswith(" 버터 바보야...?"):
+            var_name = code[:-11]
             if var_name not in variables:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
@@ -98,45 +103,45 @@ def main(program: str):
                 variables[var_name] = int(inp in "Yy")
             else:
                 error_handeler("not_bool", is_stop_when_error)
-        if i.startswith("이제 모두 반성의 시간을 가질테니 얌전히 있도록"):
-            wait_time = i[26:]
+        if code.startswith("이제 모두 반성의 시간을 가질테니 얌전히 있도록"):
+            wait_time = code[26:]
             time.sleep(wait_time)
 
-        if i.endswith("을 한 방에 다 정리해버리고") or i.endswith(
+        if code.endswith("을 한 방에 다 정리해버리고") or code.endswith(
             "를 한 방에 다 정리해버리고"
         ):
-            var_name = i[:-15]
+            var_name = code[:-15]
             if var_name in variables and var_name not in consts:
                 variables[var_name] = 0
             else:
                 error_handeler("not_exist_var", is_stop_when_error)
-        if i.endswith("은 친구 아니야!") or i.endswith("는 친구 아니야!"):
-            var_name = i[:-9]
+        if code.endswith("은 친구 아니야!") or code.endswith("는 친구 아니야!"):
+            var_name = code[:-9]
             if var_name in variables:
                 del variables[var_name]
                 if var_name in consts:
                     consts.remove(var_name)
             else:
                 error_handeler("not_exist_var", is_stop_when_error)
-        if i == "따지고 보면 다 너 떄문이야!":
+        if code == "따지고 보면 다 너 떄문이야!":
             numebr_print_mode = not numebr_print_mode
-        if i == "버터는 친구들을 돕는게 좋아! 그냥 하면 돼!":
+        if code == "버터는 친구들을 돕는게 좋아! 그냥 하면 돼!":
             is_stop_when_error = False
         if (
-            i
+            code
             == "버터는 친구들이 웃는게 좋아! 나도 웃는게 좋아! 같이 산책하는 것도 좋아! 밥먹는 것도 좋아, 헤헤"
         ):
             is_stop_when_error = True
 
         if (
-            i.startswith("이제부터 ")
-            and i.endswith(" 채로 영원히 사는 거야")
-            and i.count("는 ") == 1
+            code.startswith("이제부터 ")
+            and code.endswith(" 채로 영원히 사는 거야")
+            and code.count("는 ") == 1
         ):
             # A변수명B값C 형태
-            B = i.find("는 ")
-            var_name = i[4:B]
-            var_value = i[B + 2 : -13]
+            B = code.find("는 ")
+            var_name = code[4:B]
+            var_value = code[B + 2 : -13]
             if (
                 is_vaild_var_name(var_name, is_stop_when_error)
                 and var_name not in variables
@@ -145,26 +150,26 @@ def main(program: str):
                 consts.append(var_name)
             else:
                 error_handeler("non_vaild_var_name", is_stop_when_error)
-        if i.count(" 후우...") == 1:
-            k = i.find(" 후우...")
-            var_name = i[:k]
-            var_value = toNumber(i[k + 6 :], variables)
+        if code.count(" 후우...") == 1:
+            k = code.find(" 후우...")
+            var_name = code[:k]
+            var_value = toNumber(code[k + 6 :], variables)
             if var_name not in variables and var_name not in consts:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
             variables[var_name] += var_value
-        if i.count(" 닥쳐") == 1:
-            k = i.find(" 닥쳐")
-            var_name = i[:k]
-            var_value = toNumber(i[k + 3 :], variables)
+        if code.count(" 닥쳐") == 1:
+            k = code.find(" 닥쳐")
+            var_name = code[:k]
+            var_value = toNumber(code[k + 3 :], variables)
             if var_name not in variables and var_name not in consts:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
             variables[var_name] = var_value
-        if i.count("이 또 되도않는 헛소리를 뱉고 있잖아") == 1:
-            k = i.find("이 또 되도않는 헛소리를 뱉고 있잖아")
-            var_name = i[:k]
-            std_number = toNumber(i[k + 5 :], variables)
+        if code.count("이 또 되도않는 헛소리를 뱉고 있잖아") == 1:
+            k = code.find("이 또 되도않는 헛소리를 뱉고 있잖아")
+            value = toNumber(code[:k],variables)
+            std_number = toNumber(code[k + 5 :], variables)
             if var_name not in variables:
                 error_handeler("not_exist_var", is_stop_when_error)
                 continue
@@ -179,38 +184,21 @@ def main(program: str):
             else:
                 stream = sys.stderr
             if numebr_print_mode:
-                stream.write(str(variables[var_name]))
+                stream.write(str(value))
             else:
-                stream.write(chr(variables[var_name]))
+                stream.write(chr(value))
+    
 
 
 if __name__ == "__main__":
-    hello_world = """a 푼수 요정이에용
-b 푼수 요정이에용
-result 푼수 요정이에용
-a 못 참으면 뭐?
-b 못 참으면 뭐?
+    hello_world = """에르핀 푼수 요정이에용
+에슈르도 푼수 요정이에용
+에슈르도 닥쳐!!!!!!!!!!
 따지고 보면 다 너 떄문이야!
-result 후우... a
-result 후우... b
-result도록
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result도록
-result 후우...!
-이게 진짜!
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...
-result 후우...!
-이게 진짜!
-result이 또 되도않는 헛소리를 뱉고 있잖아!"""
+마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? 에르핀?
+에르핀이 또 되도않는 헛소리를 뱉고 있잖아!
+따지고 보면 다 너 떄문이야!
+에슈르도 이 또 되도않는 헛소리를 뱉고 있잖아!
+따지고 보면 다 너 떄문이야!
+!!!!시킬 것이다!"""
     main(hello_world)
