@@ -26,6 +26,8 @@ def main(program: str):
     consts: list[str] = {}
     is_stop_when_error = True
     numebr_print_mode = False
+    level = 0
+    is_finding_else = False
     codes = program.split("\n")
     codes = map(
         lambda x: (x[: x.find("큭큭")] if "큭큭" in x else x), codes
@@ -35,6 +37,23 @@ def main(program: str):
     for i in codes:
         # print(i)
         i = i.strip()
+        if is_finding_else:
+            if i.endswith("도록"):
+                level += 1
+            if i == "이게 진짜!":
+                level -= 1
+                if level == 0:
+                    is_finding_else = False
+            continue
+        if i.endswith("도록"):
+            if_numebr = toNumber(i[:-2], variables)
+            if if_numebr == 0:
+                pass
+            else:
+                is_finding_else = True
+                level += 1
+        if i == "이게 진짜!":
+            pass
         if i.startswith("마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? ") and i[-1] == "?":
             var_name = i[28:-1]
             if var_name not in variables:
@@ -62,7 +81,7 @@ def main(program: str):
                 error_handeler("can't edit constant", is_stop_when_error)
                 continue
             inp = input()
-            if inp.isdigit():
+            if inp.isdigit() or inp[0] == "-" and inp[1:].isdigit():
                 variables[var_name] = int(inp)
             else:
                 error_handeler("not_intger", is_stop_when_error)
@@ -108,6 +127,7 @@ def main(program: str):
             == "버터는 친구들이 웃는게 좋아! 나도 웃는게 좋아! 같이 산책하는 것도 좋아! 밥먹는 것도 좋아, 헤헤"
         ):
             is_stop_when_error = True
+
         if (
             i.startswith("이제부터 ")
             and i.endswith(" 채로 영원히 사는 거야")
@@ -173,5 +193,24 @@ b 못 참으면 뭐?
 따지고 보면 다 너 떄문이야!
 result 후우... a
 result 후우... b
+result도록
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result도록
+result 후우...!
+이게 진짜!
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...
+result 후우...!
+이게 진짜!
 result이 또 되도않는 헛소리를 뱉고 있잖아!"""
     main(hello_world)
