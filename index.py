@@ -3,6 +3,7 @@ import time
 
 
 def toNumber(expe: str, vars: dict):
+    # print(expe, vars)
     return (
         (vars[expe.strip()] if expe.strip() in vars else 0)
         + expe.count("!")
@@ -21,43 +22,77 @@ def is_vaild_var_name(name: str, is_stop_when_error):
     return True
 
 
-def main(program: str,variables={},consts={},is_stop_when_error=True,numebr_print_mode = False):
-    level = 0
+def main(
+    program: str,
+    variables={},
+    consts={},
+    is_stop_when_error=True,
+    numebr_print_mode=False,
+):
+    if_level = 0
+    def_level = 0
+    is_finding_def = False
     is_finding_else = False
-    i=-1
+    func_started_line = -1
+    ret_adress = []
+    i = -1
     codes = program.split("\n")
     codes = map(
         lambda x: (x[: x.find("큭큭")] if "큭큭" in x else x), codes
     )  # 주석 제거
     codes: list[str] = filter(lambda x: x != "", codes)  # 빈행 제거
-    codes=list(codes)
-    while(i<len(codes)-1):
-        i+=1
-        code=codes[i]
+    codes = list(codes)
+    variables["트릭컬을 서비스 종료"] = len(codes)
+    while i < len(codes) - 1:
+        i += 1
+        code = codes[i]
         code = code.strip()
-        #print(code)
         if is_finding_else:
             if code.endswith("도록"):
-                level += 1
+                if_level += 1
             if code == "이게 진짜!":
-                level -= 1
-                if level == 0:
+                if_level -= 1
+                if if_level == 0:
                     is_finding_else = False
             continue
+        if is_finding_def:
+            if code == "분위기 파악 개 못하네":
+                def_level += 1
+            if code.endswith("나 차리고 앉아 있어요~") and code[:5] == "이러니까 ":
+                def_level -= 1
+                if def_level == 0:
+                    is_finding_def = False
+                    variables[code[5:-13]] = func_started_line
+            continue
+
         if code.endswith("도록"):
             if_numebr = toNumber(code[:-2], variables)
             if if_numebr == 0:
                 pass
             else:
                 is_finding_else = True
-                level += 1
+                if_level += 1
         if code == "이게 진짜!":
             pass
-        if code.endswith('시킬 것이다!'):
-            adress=toNumber(code[:-7],variables)
-            i=adress-1
+        if code == "분위기 파악 개 못하네":
+            is_finding_def = True
+            def_level = 1
+            func_started_line = i
+        if (
+            code.endswith("나 차리고 앉아 있어요~")
+            and code[:5] == "이러니까 "
+            or code == "나는 이만 간다"
+        ):
+            i = ret_adress.pop()
+        if code.endswith("시킬 것이다!"):
+            adress = toNumber(code[:-7], variables)
+            ret_adress.append(i)
+            i = adress
             continue
-        if code.startswith("마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? ") and code[-1] == "?":
+        if (
+            code.startswith("마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? ")
+            and code[-1] == "?"
+        ):
             var_name = code[28:-1]
             if var_name not in variables:
                 error_handeler("not_exist_var", is_stop_when_error)
@@ -168,11 +203,8 @@ def main(program: str,variables={},consts={},is_stop_when_error=True,numebr_prin
             variables[var_name] = var_value
         if code.count("이 또 되도않는 헛소리를 뱉고 있잖아") == 1:
             k = code.find("이 또 되도않는 헛소리를 뱉고 있잖아")
-            value = toNumber(code[:k],variables)
-            std_number = toNumber(code[k + 5 :], variables)
-            if var_name not in variables:
-                error_handeler("not_exist_var", is_stop_when_error)
-                continue
+            value = toNumber(code[:k], variables)
+            std_number = toNumber(code[k + 20 :], variables)
             if std_number == 0:
                 error_handeler("not_writeable_stdin", is_stop_when_error)
                 continue
@@ -187,18 +219,58 @@ def main(program: str,variables={},consts={},is_stop_when_error=True,numebr_prin
                 stream.write(str(value))
             else:
                 stream.write(chr(value))
-    
 
 
 if __name__ == "__main__":
-    hello_world = """에르핀 푼수 요정이에용
-에슈르도 푼수 요정이에용
-에슈르도 닥쳐!!!!!!!!!!
+    #     hello_world = """에르핀 푼수 요정이에용
+    # 에슈르도 푼수 요정이에용
+    # 에슈르도 닥쳐!!!!!!!!!!
+    # 따지고 보면 다 너 떄문이야!
+    # 마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? 에르핀?
+    # 에르핀이 또 되도않는 헛소리를 뱉고 있잖아!
+    # 따지고 보면 다 너 떄문이야!
+    # 에슈르도 이 또 되도않는 헛소리를 뱉고 있잖아!
+    # 따지고 보면 다 너 떄문이야!
+    # !!!!시킬 것이다!"""
+    hello_world = """분위기 파악 개 못하네
 따지고 보면 다 너 떄문이야!
-마, 맛있는 거요? 뭔데요? 고구마? 빵? 고기? 에르핀?
-에르핀이 또 되도않는 헛소리를 뱉고 있잖아!
+!이 또 되도않는 헛소리를 뱉고 있잖아!!
 따지고 보면 다 너 떄문이야!
-에슈르도 이 또 되도않는 헛소리를 뱉고 있잖아!
+분위기 파악 개 못하네
 따지고 보면 다 너 떄문이야!
-!!!!시킬 것이다!"""
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+!이 또 되도않는 헛소리를 뱉고 있잖아!!
+따지고 보면 다 너 떄문이야!
+이러니까 모나티엄나 차리고 앉아 있어요~
+모나티엄시킬 것이다!
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+이러니까 빵집나 차리고 앉아 있어요~
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+큭큭
+빵집시킬 것이다!
+따지고 보면 다 너 떄문이야!
+빵집이 또 되도않는 헛소리를 뱉고 있잖아!!"""
     main(hello_world)
