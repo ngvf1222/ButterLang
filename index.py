@@ -28,6 +28,7 @@ def main(
     consts={},
     is_stop_when_error=True,
     numebr_print_mode=False,
+    string_input=None
 ):
     if_level = 0
     def_level = 0
@@ -101,9 +102,15 @@ def main(
             if var_name in consts:
                 error_handeler("can't edit constant", is_stop_when_error)
                 continue
-            for j in sys.stdin:
-                variables[var_name] = ord(j[0])
-                break
+            if string_input:
+                ch=string_input[0]
+                string_input=string_input[1:]
+            else:
+                for j in sys.stdin:
+                    ch=j[0]
+                    break
+            variables[var_name] = ord(ch)
+            
         if (
             code.endswith(" 푼수 요정이에용")
             or code.endswith(" 푼수 수인이에용")
@@ -129,7 +136,11 @@ def main(
             if var_name in consts:
                 error_handeler("can't edit constant", is_stop_when_error)
                 continue
-            inp = input()
+            if string_input:
+                inp=string_input.split(' ')[0]
+                string_input=' '.join(string_input.split(' ')[1:])
+            else:
+                inp = input()
             if inp.isdigit() or inp[0] == "-" and inp[1:].isdigit():
                 variables[var_name] = int(inp)
             else:
@@ -142,7 +153,11 @@ def main(
             if var_name in consts:
                 error_handeler("can't edit constant", is_stop_when_error)
                 continue
-            inp = input("(y|n)")
+            if string_input:
+                inp=string_input[0]
+                string_input=string_input[1:]
+            else:
+                inp = input("(y|n)")
             if inp in "YNyn":
                 variables[var_name] = int(inp in "Yy")
             else:
@@ -236,7 +251,13 @@ def run(argv):
         f = open(filename, "r", encoding="utf8")
         code = f.read()
         f.close()
-        main(code)
+        if len(argv)==3:
+            f=open(argv[2],'r',encoding='utf8')
+            inp=f.read()
+            f.close()
+            main(code,string_input=inp)
+        else:
+            main(code)
     except IndexError:
         error_handeler("file_missing")
         return 1
