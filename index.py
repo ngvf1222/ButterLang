@@ -47,6 +47,7 @@ def main(
         i += 1
         code = codes[i]
         code = code.strip()
+        # print(code, variables)
         if is_finding_else:
             if code.endswith("도록"):
                 if_level += 1
@@ -103,7 +104,15 @@ def main(
             for j in sys.stdin:
                 variables[var_name] = ord(j[0])
                 break
-        if code.endswith(" 푼수 요정이에용"):
+        if (
+            code.endswith(" 푼수 요정이에용")
+            or code.endswith(" 푼수 수인이에용")
+            or code.endswith(" 푼수 마녀이에용")
+            or code.endswith(" 푼수 용족이에용")
+            or code.endswith(" 푼수 정령이에용")
+            or code.endswith(" 푼수 유령이에용")
+            or code.endswith(" 푼수 엘프이에용")
+        ):
             var_name = code[:-9]
             if (
                 is_vaild_var_name(var_name, is_stop_when_error)
@@ -224,7 +233,7 @@ def main(
 def run(argv):
     try:
         filename = argv[1]
-        f = open(filename, "r")
+        f = open(filename, "r", encoding="utf8")
         code = f.read()
         f.close()
         main(code)
