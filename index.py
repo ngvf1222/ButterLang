@@ -36,6 +36,9 @@ def main(
     is_finding_else = False
     func_started_line = -1
     ret_adress = []
+    tail={}
+    is_tail=False
+    is_r=False
     i = -1
     codes = program.split("\n")
     codes = map(
@@ -48,7 +51,6 @@ def main(
         i += 1
         code = codes[i]
         code = code.strip()
-        # print(code, variables)
         if is_finding_else:
             if code.endswith("도록"):
                 if_level += 1
@@ -65,6 +67,13 @@ def main(
                 if def_level == 0:
                     is_finding_def = False
                     variables[code[5:-13]] = func_started_line
+                    tail[toNumber(code[5:-13],variables)]=is_tail and is_r
+                    is_tail=False
+                    is_r=False
+            if code.endswith("시킬 것이다!"):
+                is_r=True
+                if not codes[i+1].endswith("나 차리고 앉아 있어요~") or not codes[i+1][:5] == "이러니까 ":
+                    is_tail=False
             continue
 
         if code.endswith("도록"):
@@ -79,6 +88,7 @@ def main(
         if code == "분위기 파악 개 못하네":
             is_finding_def = True
             def_level = 1
+            is_tail=True
             func_started_line = i
         if (
             code.endswith("나 차리고 앉아 있어요~")
@@ -88,7 +98,8 @@ def main(
             i = ret_adress.pop()
         if code.endswith("시킬 것이다!"):
             adress = toNumber(code[:-7], variables)
-            ret_adress.append(i)
+            if not tail[adress]:
+                ret_adress.append(i)
             i = adress
             continue
         if (
