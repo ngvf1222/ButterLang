@@ -2,13 +2,20 @@ import sys
 import time
 
 
+def NumberToBlang(num:int):
+    if num>=0:
+        return "!"*num
+    else:
+        return "?"*(-num)
 def toNumber(expe: str, vars: dict):
     # print(expe, vars)
-    return (
-        (vars[expe.strip()] if expe.strip() in vars else 0)
-        + expe.count("!")
-        - expe.count("?")
-    )
+    expe_strip=expe.strip()
+    result=1
+    for i in vars:
+        expe_strip=expe_strip.replace(i,NumberToBlang(vars[i]))
+    for i in expe_strip.split(' '):
+        result*=i.count("!")- expe.count("?")
+    return result
 
 
 def error_handeler(error_code, is_stop_when_error):
@@ -30,15 +37,15 @@ def main(
     numebr_print_mode=False,
     string_input=None
 ):
-    if_level = 0
-    def_level = 0
+    if_depth = 0
+    def_depth = 0
     is_finding_def = False
     is_finding_else = False
     func_started_line = -1
     ret_adress = []
-    tail={}
-    is_tail=False
-    is_r=False
+    is_tail_recursion_dict={}
+    is_tail_recursion=False
+    is_recursion=False
     i = -1
     codes = program.split("\n")
     codes = map(
@@ -46,34 +53,34 @@ def main(
     )  # 주석 제거
     codes: list[str] = filter(lambda x: x != "", codes)  # 빈행 제거
     codes = list(codes)
-    variables["트릭컬을 서비스 종료"] = len(codes)
+    variables["트릭컬을 서비스 종료"] = len(codes)#exit함수
     while i < len(codes) - 1:
         i += 1
         code = codes[i]
         code = code.strip()
         if is_finding_else:
             if code.endswith("도록"):
-                if_level += 1
+                if_depth += 1
             if code == "이게 진짜!":
-                if_level -= 1
-                if if_level == 0:
+                if_depth -= 1
+                if if_depth == 0:
                     is_finding_else = False
             continue
         if is_finding_def:
             if code == "분위기 파악 개 못하네":
-                def_level += 1
+                def_depth += 1
             if code.endswith("나 차리고 앉아 있어요~") and code[:5] == "이러니까 ":
-                def_level -= 1
-                if def_level == 0:
+                def_depth -= 1
+                if def_depth == 0:
                     is_finding_def = False
                     variables[code[5:-13]] = func_started_line
-                    tail[toNumber(code[5:-13],variables)]=is_tail and is_r
-                    is_tail=False
-                    is_r=False
+                    is_tail_recursion_dict[func_started_line]=is_tail_recursion and is_recursion
+                    is_tail_recursion=False
+                    is_recursion=False
             if code.endswith("시킬 것이다!"):
-                is_r=True
-                if not codes[i+1].endswith("나 차리고 앉아 있어요~") or not codes[i+1][:5] == "이러니까 ":
-                    is_tail=False
+                is_recursion=True
+                if not codes[i+1].endswith("나 차리고 앉아 있어요~") or not codes[i+1][:5] == "이러니까 ":#마지막 줄전에 호출->꼬리재귀x
+                    is_tail_recursion=False
             continue
 
         if code.endswith("도록"):
@@ -82,13 +89,13 @@ def main(
                 pass
             else:
                 is_finding_else = True
-                if_level += 1
+                if_depth += 1
         if code == "이게 진짜!":
             pass
         if code == "분위기 파악 개 못하네":
             is_finding_def = True
-            def_level = 1
-            is_tail=True
+            def_depth = 1
+            is_tail_recursion=True
             func_started_line = i
         if (
             code.endswith("나 차리고 앉아 있어요~")
@@ -98,7 +105,7 @@ def main(
             i = ret_adress.pop()
         if code.endswith("시킬 것이다!"):
             adress = toNumber(code[:-7], variables)
-            if not tail[adress]:
+            if not is_tail_recursion_dict[adress]:
                 ret_adress.append(i)
             i = adress
             continue
