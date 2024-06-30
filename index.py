@@ -1,7 +1,17 @@
 import sys
 import time
+from enum import Enum
 
-
+class ErrorCode(Enum):
+    not_exist_var="교주님! 그런 변수는 없는거 같아여! 히히"
+    cant_edit_constant="교주님! 상수는 못바꾼데여!"
+    non_vaild_var_name="교주님! 변수 이름이 이상해여!"
+    not_intger="교주님! 숫자가 아닌거 같아여!"
+    not_bool="교주님! 맞는지 아닌지 확실하게 말해주세여!"
+    not_writeable_stdin="교주님! 표준입력에는 못쓰는데여!"
+    not_opened_std_number="교주님! 스트림이 닫힌 같아여!"
+    file_missing="교주님! 제가 뭐해야하는지 알려주세여!"
+    file_not_found="교주님! 파일이 없어여!"
 def NumberToBlang(num:int):
     if num>=0:
         return "!"*num
@@ -18,9 +28,10 @@ def toNumber(expe: str, vars: dict):
     return result
 
 
-def error_handeler(error_code, is_stop_when_error):
-    print(error_code)
-    sys.exit()
+def error_handeler(error_message, is_stop_when_error):
+    print(error_message)
+    if is_stop_when_error:
+        sys.exit()
 
 
 def is_vaild_var_name(name: str, is_stop_when_error):
@@ -115,10 +126,10 @@ def main(
         ):
             var_name = code[28:-1]
             if var_name not in variables:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
                 continue
             if var_name in consts:
-                error_handeler("can't edit constant", is_stop_when_error)
+                error_handeler(ErrorCode.cant_edit_constant, is_stop_when_error)
                 continue
             if string_input:
                 ch=string_input[0]
@@ -145,14 +156,14 @@ def main(
             ):
                 variables[var_name] = 0
             else:
-                error_handeler("non_vaild_var_name", is_stop_when_error)
+                error_handeler(ErrorCode.non_vaild_var_name, is_stop_when_error)
         if code.endswith(" 못 참으면 뭐?"):
             var_name = code[:-9]
             if var_name not in variables:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
                 continue
             if var_name in consts:
-                error_handeler("can't edit constant", is_stop_when_error)
+                error_handeler(ErrorCode.cant_edit_constant, is_stop_when_error)
                 continue
             if string_input:
                 inp=string_input.split(' ')[0]
@@ -162,14 +173,14 @@ def main(
             if inp.isdigit() or inp[0] == "-" and inp[1:].isdigit():
                 variables[var_name] = int(inp)
             else:
-                error_handeler("not_intger", is_stop_when_error)
+                error_handeler(ErrorCode.not_intger, is_stop_when_error)
         if code.endswith(" 버터 바보야...?"):
             var_name = code[:-11]
             if var_name not in variables:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
                 continue
             if var_name in consts:
-                error_handeler("can't edit constant", is_stop_when_error)
+                error_handeler(ErrorCode.cant_edit_constant, is_stop_when_error)
                 continue
             if string_input:
                 inp=string_input[0]
@@ -179,9 +190,9 @@ def main(
             if inp in "YNyn":
                 variables[var_name] = int(inp in "Yy")
             else:
-                error_handeler("not_bool", is_stop_when_error)
+                error_handeler(ErrorCode.not_bool, is_stop_when_error)
         if code.startswith("이제 모두 반성의 시간을 가질테니 얌전히 있도록"):
-            wait_time = code[26:]
+            wait_time = toNumber(code[26:])
             time.sleep(wait_time)
 
         if code.endswith("을 한 방에 다 정리해버리고") or code.endswith(
@@ -191,7 +202,7 @@ def main(
             if var_name in variables and var_name not in consts:
                 variables[var_name] = 0
             else:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
         if code.endswith("은 친구 아니야!") or code.endswith("는 친구 아니야!"):
             var_name = code[:-9]
             if var_name in variables:
@@ -199,7 +210,7 @@ def main(
                 if var_name in consts:
                     consts.remove(var_name)
             else:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
         if code == "따지고 보면 다 너 떄문이야!":
             numebr_print_mode = not numebr_print_mode
         if code == "버터는 친구들을 돕는게 좋아! 그냥 하면 돼!":
@@ -226,13 +237,13 @@ def main(
                 variables[var_name] = 0
                 consts.append(var_name)
             else:
-                error_handeler("non_vaild_var_name", is_stop_when_error)
+                error_handeler(ErrorCode.non_vaild_var_name, is_stop_when_error)
         if code.count(" 후우...") == 1:
             k = code.find(" 후우...")
             var_name = code[:k]
             var_value = toNumber(code[k + 6 :], variables)
             if var_name not in variables and var_name not in consts:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
                 continue
             variables[var_name] += var_value
         if code.count(" 닥쳐") == 1:
@@ -240,7 +251,7 @@ def main(
             var_name = code[:k]
             var_value = toNumber(code[k + 3 :], variables)
             if var_name not in variables and var_name not in consts:
-                error_handeler("not_exist_var", is_stop_when_error)
+                error_handeler(ErrorCode.not_exist_var, is_stop_when_error)
                 continue
             variables[var_name] = var_value
         if code.count("이 또 되도않는 헛소리를 뱉고 있잖아") == 1:
@@ -248,10 +259,10 @@ def main(
             value = toNumber(code[:k], variables)
             std_number = toNumber(code[k + 20 :], variables)
             if std_number == 0:
-                error_handeler("not_writeable_stdin", is_stop_when_error)
+                error_handeler(ErrorCode.not_writeable_stdin, is_stop_when_error)
                 continue
-            if std_number > 2:
-                error_handeler("not_exist_std_number", is_stop_when_error)
+            if not os.isatty(std_number):
+                error_handeler(ErrorCode.not_opened_std_number, is_stop_when_error)
                 continue
             if std_number == 1:
                 stream = sys.stdout
@@ -261,7 +272,6 @@ def main(
                 stream.write(str(value))
             else:
                 stream.write(chr(value))
-
 
 def run(argv):
     try:
@@ -277,10 +287,10 @@ def run(argv):
         else:
             main(code)
     except IndexError:
-        error_handeler("file_missing")
+        error_handeler(ErrorCode.file_missing,True)
         return 1
     except FileNotFoundError:
-        error_handeler("file_not_found")
+        error_handeler(ErrorCode.file_not_found,True)
         return 1
     return 0
 
