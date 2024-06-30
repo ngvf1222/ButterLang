@@ -1,7 +1,7 @@
 import sys
 import time
 from enum import Enum
-
+import oss
 class ErrorCode(Enum):
     not_exist_var="교주님! 그런 변수는 없는거 같아여! 히히"
     cant_edit_constant="교주님! 상수는 못바꾼데여!"
@@ -29,7 +29,7 @@ def toNumber(expe: str, vars: dict):
 
 
 def error_handeler(error_message, is_stop_when_error):
-    print(error_message)
+    print(error_message.value)
     if is_stop_when_error:
         sys.exit()
 
