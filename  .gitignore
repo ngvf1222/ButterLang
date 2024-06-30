@@ -1,0 +1,4 @@
+pypy/
+index_rpython.py
+index_rpython.pyc
+__pycache__/
